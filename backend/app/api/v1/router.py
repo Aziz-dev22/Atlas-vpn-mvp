@@ -1,12 +1,7 @@
 from fastapi import APIRouter
 
+from app.api.v1.users import router as users_router
+
 router = APIRouter()
 
-
-@router.get("/health")
-async def health():
-    return {
-        "status": "ok",
-        "service": "Atlas VPN",
-        "version": "1.0.0"
-    }
+router.include_router(users_router)
