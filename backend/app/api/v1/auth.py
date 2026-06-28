@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -14,14 +14,16 @@ def login(telegram_id: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.telegram_id == telegram_id).first()
 
     if not user:
-        return {"error": "user not found"}
+        raise HTTPException(status_code=404, detail="User not found")
 
     token = create_access_token(
-        data={"sub": str(user.id), "telegram_id": user.telegram_id}
+        data={
+            "sub": str(user.id),
+            "telegram_id": user.telegram_id
+        }
     )
 
     return {
         "access_token": token,
-        "token_type": "bearer",
-        "user_id": user.id
+        "token_type": "bearer"
     }
