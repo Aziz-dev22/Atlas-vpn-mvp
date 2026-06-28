@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.post("/buy/{plan_id}")
-def buy_plan(
+async def buy_plan(
     plan_id: int,
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
@@ -21,15 +21,15 @@ def buy_plan(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
 
-    order, subscription = create_order(
+    result = await create_order(
         db=db,
-        user_id=user["user_id"],
+        user_id=int(user["user_id"]),
         plan=plan
     )
 
     return {
         "message": "Purchase successful",
-        "order_id": order.id,
-        "subscription_id": subscription.id,
-        "expires_at": subscription.end_date
+        "order_id": result["order"].id,
+        "subscription_id": result["subscription"].id,
+        "vpn_user": result["vpn_user"]
     }
