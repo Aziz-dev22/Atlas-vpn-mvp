@@ -1,5 +1,4 @@
 import httpx
-from app.core.config import settings
 
 
 BASE_URL = "http://backend:8000/api/v1"
