@@ -4,6 +4,8 @@ services:
 
   backend:
     build: ./backend
+    container_name: atlas_backend
+    restart: always
 
     ports:
       - "8000:8000"
@@ -17,7 +19,7 @@ services:
 
   postgres:
     image: postgres:16
-
+    container_name: atlas_postgres
     restart: always
 
     environment:
@@ -25,11 +27,19 @@ services:
       POSTGRES_PASSWORD: atlas123
       POSTGRES_DB: atlasvpn
 
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
     ports:
       - "5432:5432"
 
   redis:
     image: redis:7
+    container_name: atlas_redis
+    restart: always
 
     ports:
       - "6379:6379"
+
+volumes:
+  pg_data:
