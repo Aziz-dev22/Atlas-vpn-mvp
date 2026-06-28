@@ -1,0 +1,27 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.models.user import User
+from app.core.security import create_access_token
+
+router = APIRouter()
+
+
+@router.post("/login")
+def login(telegram_id: str, db: Session = Depends(get_db)):
+
+    user = db.query(User).filter(User.telegram_id == telegram_id).first()
+
+    if not user:
+        return {"error": "user not found"}
+
+    token = create_access_token(
+        data={"sub": str(user.id), "telegram_id": user.telegram_id}
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_id": user.id
+    }
