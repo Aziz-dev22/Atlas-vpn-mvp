@@ -1,22 +1,39 @@
-from aiogram import Router, types
-from app.bot.client import create_or_get_user
+from aiogram import Router, types, F
+from aiogram.types import CallbackQuery
+
+from app.bot.client import get_plans, buy_plan
+from app.bot.keyboards import plans_keyboard
 
 router = Router()
 
 
 @router.message()
-async def start_handler(message: types.Message):
+async def start(message: types.Message):
 
-    user_data = {
-        "telegram_id": str(message.from_user.id),
-        "username": message.from_user.username,
-        "full_name": message.from_user.full_name
-    }
+    plans = await get_plans()
 
-    user = await create_or_get_user(user_data)
+    keyboard = plans_keyboard(plans)
 
     await message.answer(
-        f"سلام {message.from_user.full_name} 👋\n"
-        f"حساب شما ساخته شد یا قبلاً وجود داشت.\n\n"
-        f"User ID: {user.get('id')}"
+        "💎 پلن‌های موجود:\n\nبرای خرید یکی را انتخاب کن:",
+        reply_markup=keyboard
     )
+
+
+@router.callback_query(F.data.startswith("buy_"))
+async def buy(callback: CallbackQuery):
+
+    plan_id = int(callback.data.split("_")[1])
+
+    result = await buy_plan(
+        plan_id=plan_id,
+        telegram_id=str(callback.from_user.id)
+    )
+
+    await callback.message.answer(
+        f"✅ خرید موفق!\n\n"
+        f"Order ID: {result['order_id']}\n"
+        f"VPN User: {result['vpn_user']}"
+    )
+
+    await callback.answer()
